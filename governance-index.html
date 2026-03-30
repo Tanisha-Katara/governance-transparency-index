@@ -4,20 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filecoin Governance Transparency Index</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
   <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
   <style>body { margin: 0; }</style>
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel">
-    const { useState, useMemo, useEffect } = React;
-    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Area, AreaChart, ComposedChart } = Recharts;
-
-
+  <script>
+    window.onerror = function(msg, src, line, col, err) {
+      document.body.innerHTML = '<pre style="color:red;padding:20px">ERROR: ' + msg + '\nLine: ' + line + '\n' + (err ? err.stack : '') + '</pre>';
+    };
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+    var useMemo = React.useMemo;
+    var useCallback = React.useCallback;
+    var useRef = React.useRef;
+    var LineChart = Recharts.LineChart;
+    var Line = Recharts.Line;
+    var XAxis = Recharts.XAxis;
+    var YAxis = Recharts.YAxis;
+    var CartesianGrid = Recharts.CartesianGrid;
+    var Tooltip = Recharts.Tooltip;
+    var ResponsiveContainer = Recharts.ResponsiveContainer;
+    var RadarChart = Recharts.RadarChart;
+    var PolarGrid = Recharts.PolarGrid;
+    var PolarAngleAxis = Recharts.PolarAngleAxis;
+    var PolarRadiusAxis = Recharts.PolarRadiusAxis;
+    var Radar = Recharts.Radar;
+    var Legend = Recharts.Legend;
+    var Area = Recharts.Area;
+    var AreaChart = Recharts.AreaChart;
+    var ComposedChart = Recharts.ComposedChart;
+  </script>
+  <script>
 const COLORS = {
   artifacts: '#0891b2',
   coreDevs: '#7c3aed',
@@ -31,57 +53,90 @@ const COLORS = {
   muted: '#64748b',
   highlight: '#22d3ee'
 };
-
-const categories = [
-  {
-    id: 'artifacts',
-    name: 'Published Governance Artifacts',
-    weight: 30,
-    color: COLORS.artifacts,
-    description: 'Measures existence and freshness of canonical governance documents',
-    metrics: [
-      { key: 'charter_updates', name: 'Committee charter updates', cap: 2, rationale: 'Material charter revisions are rare; more suggests instability' },
-      { key: 'gh_announcements', name: 'GitHub announcements', cap: 4, rationale: '~1 meaningful announcement/week is healthy; more becomes noise' },
-      { key: 'fip_decisions', name: 'FIP decision logs', cap: 4, rationale: 'Beyond ~4/month reduces clarity through operational churn' }
-    ]
-  },
-  {
-    id: 'coreDevs',
-    name: 'Core Devs Transparency',
-    weight: 35,
-    color: COLORS.coreDevs,
-    description: 'Tracks documentation quality of core developer meetings',
-    metrics: [
-      { key: 'agendas', name: 'Agendas published before calls', cap: 1, rationale: 'Core Devs typically meet once per month' },
-      { key: 'summaries', name: 'Summaries published after calls', cap: 1, rationale: 'Same cadence as agendas; more is not expected' },
-      { key: 'decisions_ais', name: 'Decisions & action items documented', cap: 4, rationale: 'Forces discipline; not every call must decide something' }
-    ]
-  },
-  {
-    id: 'comms',
-    name: 'Governance Communications',
-    weight: 25,
-    color: COLORS.comms,
-    description: 'Evaluates public communication about governance activities',
-    metrics: [
-      { key: 'network_updates', name: 'Network upgrade updates on GitHub', cap: 6, rationale: 'Weekly structured updates is strong transparency' },
-      { key: 'public_blogs', name: 'Public blogs on upgrades & FIPs', cap: 3, rationale: 'More than ~2/month dilutes signal and trust' }
-    ]
-  },
-  {
-    id: 'github',
-    name: 'GitHub Activity Index',
-    weight: 10,
-    color: COLORS.github,
-    description: 'Measures engagement quality on governance repositories',
-    metrics: [
-      { key: 'issue_updates', name: 'Issue updates', cap: 6, rationale: 'Tracks active hygiene without rewarding churn' },
-      { key: 'review_comments', name: 'Review comments', cap: 6, rationale: 'Encourages substantive review, not nitpicking' },
-      { key: 'fip_transitions', name: 'FIP lifecycle transitions', cap: 6, rationale: 'Mirrors decision-log cap to avoid inflation' }
-    ]
-  }
-];
-
+const categories = [{
+  id: 'artifacts',
+  name: 'Published Governance Artifacts',
+  weight: 30,
+  color: COLORS.artifacts,
+  description: 'Measures existence and freshness of canonical governance documents',
+  metrics: [{
+    key: 'charter_updates',
+    name: 'Committee charter updates',
+    cap: 2,
+    rationale: 'Material charter revisions are rare; more suggests instability'
+  }, {
+    key: 'gh_announcements',
+    name: 'GitHub announcements',
+    cap: 4,
+    rationale: '~1 meaningful announcement/week is healthy; more becomes noise'
+  }, {
+    key: 'fip_decisions',
+    name: 'FIP decision logs',
+    cap: 4,
+    rationale: 'Beyond ~4/month reduces clarity through operational churn'
+  }]
+}, {
+  id: 'coreDevs',
+  name: 'Core Devs Transparency',
+  weight: 35,
+  color: COLORS.coreDevs,
+  description: 'Tracks documentation quality of core developer meetings',
+  metrics: [{
+    key: 'agendas',
+    name: 'Agendas published before calls',
+    cap: 1,
+    rationale: 'Core Devs typically meet once per month'
+  }, {
+    key: 'summaries',
+    name: 'Summaries published after calls',
+    cap: 1,
+    rationale: 'Same cadence as agendas; more is not expected'
+  }, {
+    key: 'decisions_ais',
+    name: 'Decisions & action items documented',
+    cap: 4,
+    rationale: 'Forces discipline; not every call must decide something'
+  }]
+}, {
+  id: 'comms',
+  name: 'Governance Communications',
+  weight: 25,
+  color: COLORS.comms,
+  description: 'Evaluates public communication about governance activities',
+  metrics: [{
+    key: 'network_updates',
+    name: 'Network upgrade updates on GitHub',
+    cap: 6,
+    rationale: 'Weekly structured updates is strong transparency'
+  }, {
+    key: 'public_blogs',
+    name: 'Public blogs on upgrades & FIPs',
+    cap: 3,
+    rationale: 'More than ~2/month dilutes signal and trust'
+  }]
+}, {
+  id: 'github',
+  name: 'GitHub Activity Index',
+  weight: 10,
+  color: COLORS.github,
+  description: 'Measures engagement quality on governance repositories',
+  metrics: [{
+    key: 'issue_updates',
+    name: 'Issue updates',
+    cap: 6,
+    rationale: 'Tracks active hygiene without rewarding churn'
+  }, {
+    key: 'review_comments',
+    name: 'Review comments',
+    cap: 6,
+    rationale: 'Encourages substantive review, not nitpicking'
+  }, {
+    key: 'fip_transitions',
+    name: 'FIP lifecycle transitions',
+    cap: 6,
+    rationale: 'Mirrors decision-log cap to avoid inflation'
+  }]
+}];
 const calculateCategoryScore = (rawData, category) => {
   let sumCapped = 0;
   let sumCaps = 0;
@@ -92,73 +147,159 @@ const calculateCategoryScore = (rawData, category) => {
   });
   return sumCaps > 0 ? sumCapped / sumCaps : 0;
 };
-
-const calculateFinalScore = (scores, weights = { artifacts: 30, coreDevs: 35, comms: 25, github: 10 }) => {
+const calculateFinalScore = (scores, weights = {
+  artifacts: 30,
+  coreDevs: 35,
+  comms: 25,
+  github: 10
+}) => {
   const totalWeight = weights.artifacts + weights.coreDevs + weights.comms + weights.github;
-  return (
-    scores.artifacts * weights.artifacts +
-    scores.coreDevs * weights.coreDevs +
-    scores.comms * weights.comms +
-    scores.github * weights.github
-  ) / totalWeight;
+  return (scores.artifacts * weights.artifacts + scores.coreDevs * weights.coreDevs + scores.comms * weights.comms + scores.github * weights.github) / totalWeight;
 };
-
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label
+}) => {
   if (active && payload && payload.length) {
-    return (
-      <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '12px 16px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
-        <p style={{ color: '#e2e8f0', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{label}</p>
-        {payload.map((entry, i) => (
-          <p key={i} style={{ color: entry.color, fontSize: 13, margin: '4px 0' }}>
-            {entry.name}: <span style={{ fontWeight: 600 }}>{(entry.value * 100).toFixed(1)}%</span>
-          </p>
-        ))}
-      </div>
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: '#1e293b',
+        border: '1px solid #334155',
+        borderRadius: 8,
+        padding: '12px 16px',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
+      }
+    }, /*#__PURE__*/React.createElement("p", {
+      style: {
+        color: '#e2e8f0',
+        fontWeight: 600,
+        marginBottom: 8,
+        fontSize: 14
+      }
+    }, label), payload.map((entry, i) => /*#__PURE__*/React.createElement("p", {
+      key: i,
+      style: {
+        color: entry.color,
+        fontSize: 13,
+        margin: '4px 0'
+      }
+    }, entry.name, ": ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 600
+      }
+    }, (entry.value * 100).toFixed(1), "%"))));
   }
   return null;
 };
-
-const ScoreGauge = ({ score, label, color, size = 120 }) => {
+const ScoreGauge = ({
+  score,
+  label,
+  color,
+  size = 120
+}) => {
   const circumference = 2 * Math.PI * 45;
-  const offset = circumference - (score * circumference);
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <svg width={size} height={size} viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="45" fill="none" stroke="#1e293b" strokeWidth="8" />
-        <circle
-          cx="50" cy="50" r="45" fill="none" stroke={color} strokeWidth="8"
-          strokeDasharray={circumference} strokeDashoffset={offset}
-          strokeLinecap="round" transform="rotate(-90 50 50)"
-          style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
-        />
-        <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" fill="#e2e8f0" fontSize="22" fontWeight="700">
-          {(score * 100).toFixed(0)}
-        </text>
-        <text x="50" y="65" textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontSize="10">
-          / 100
-        </text>
-      </svg>
-      {label && <span style={{ color: '#94a3b8', fontSize: 12, marginTop: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>}
-    </div>
-  );
+  const offset = circumference - score * circumference;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: "0 0 100 100"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "50",
+    cy: "50",
+    r: "45",
+    fill: "none",
+    stroke: "#1e293b",
+    strokeWidth: "8"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "50",
+    cy: "50",
+    r: "45",
+    fill: "none",
+    stroke: color,
+    strokeWidth: "8",
+    strokeDasharray: circumference,
+    strokeDashoffset: offset,
+    strokeLinecap: "round",
+    transform: "rotate(-90 50 50)",
+    style: {
+      transition: 'stroke-dashoffset 0.8s ease-out'
+    }
+  }), /*#__PURE__*/React.createElement("text", {
+    x: "50",
+    y: "50",
+    textAnchor: "middle",
+    dominantBaseline: "middle",
+    fill: "#e2e8f0",
+    fontSize: "22",
+    fontWeight: "700"
+  }, (score * 100).toFixed(0)), /*#__PURE__*/React.createElement("text", {
+    x: "50",
+    y: "65",
+    textAnchor: "middle",
+    dominantBaseline: "middle",
+    fill: "#64748b",
+    fontSize: "10"
+  }, "/ 100")), label && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#94a3b8',
+      fontSize: 12,
+      marginTop: 8,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em'
+    }
+  }, label));
 };
-
-const MetricBar = ({ value, cap, color }) => {
+const MetricBar = ({
+  value,
+  cap,
+  color
+}) => {
   const percentage = Math.min(value / cap, 1) * 100;
   const isOver = value > cap;
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
-      <div style={{ flex: 1, height: 8, background: '#1e293b', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${percentage}%`, background: color, borderRadius: 4, transition: 'width 0.5s ease' }} />
-      </div>
-      <span style={{ color: isOver ? '#f59e0b' : '#64748b', fontSize: 13, minWidth: 50, textAlign: 'right', fontFamily: 'monospace' }}>
-        {value}/{cap}
-      </span>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      width: '100%'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      height: 8,
+      background: '#1e293b',
+      borderRadius: 4,
+      overflow: 'hidden',
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      height: '100%',
+      width: `${percentage}%`,
+      background: color,
+      borderRadius: 4,
+      transition: 'width 0.5s ease'
+    }
+  })), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: isOver ? '#f59e0b' : '#64748b',
+      fontSize: 13,
+      minWidth: 50,
+      textAlign: 'right',
+      fontFamily: 'monospace'
+    }
+  }, value, "/", cap));
 };
-
 const SAMPLE_CSV = `month,charter_updates,gh_announcements,fip_decisions,agendas,summaries,decisions_ais,network_updates,public_blogs,issue_updates,review_comments,fip_transitions
 Jul,0,8,6,0,0,0,0,0,0,2,6
 Aug,0,11,7,1,1,1,4,1,2,1,7
@@ -166,25 +307,27 @@ Sep,0,14,11,1,1,1,6,2,1,3,11
 Oct,0,3,3,1,0,0,8,1,2,1,3
 Nov,1,3,2,3,2,2,3,1,8,2,2
 Dec,2,1,2,1,1,3,4,2,3,1,2`;
-
+function FilecoinGovernanceIndex() {
   const [rawData, setRawData] = useState({});
   const [monthlyData, setMonthlyData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
   const [showMethodology, setShowMethodology] = useState(false);
-  const [customWeights, setCustomWeights] = useState({ artifacts: 30, coreDevs: 35, comms: 25, github: 10 });
+  const [customWeights, setCustomWeights] = useState({
+    artifacts: 30,
+    coreDevs: 35,
+    comms: 25,
+    github: 10
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showDataFormat, setShowDataFormat] = useState(false);
-
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       setError(null);
-      
       try {
         const response = await fetch('./governance-data.csv');
-        
         if (response.ok) {
           const csvText = await response.text();
           parseAndSetData(csvText);
@@ -197,29 +340,24 @@ Dec,2,1,2,1,1,3,4,2,3,1,2`;
         parseAndSetData(SAMPLE_CSV);
       }
     };
-
     loadData();
   }, []);
-
-  const parseAndSetData = (csvText) => {
+  const parseAndSetData = csvText => {
     Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true,
       dynamicTyping: true,
-      complete: (results) => {
+      complete: results => {
         if (results.errors.length > 0) {
           setError('Error parsing CSV: ' + results.errors[0].message);
           setIsLoading(false);
           return;
         }
-
         const parsed = {};
         const monthly = [];
-
         results.data.forEach(row => {
           const month = row.month;
           if (!month) return;
-
           parsed[month] = {
             charter_updates: row.charter_updates || 0,
             gh_announcements: row.gh_announcements || 0,
@@ -233,21 +371,18 @@ Dec,2,1,2,1,1,3,4,2,3,1,2`;
             review_comments: row.review_comments || 0,
             fip_transitions: row.fip_transitions || 0
           };
-
           const scores = {
             artifacts: calculateCategoryScore(parsed[month], categories[0]),
             coreDevs: calculateCategoryScore(parsed[month], categories[1]),
             comms: calculateCategoryScore(parsed[month], categories[2]),
             github: calculateCategoryScore(parsed[month], categories[3])
           };
-
           monthly.push({
             month,
             ...scores,
             final: calculateFinalScore(scores)
           });
         });
-
         setRawData(parsed);
         setMonthlyData(monthly);
         if (monthly.length > 0) {
@@ -257,68 +392,100 @@ Dec,2,1,2,1,1,3,4,2,3,1,2`;
       }
     });
   };
-
-  const handleFileUpload = (event) => {
+  const handleFileUpload = event => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         parseAndSetData(e.target.result);
       };
       reader.readAsText(file);
     }
   };
-
   const currentData = useMemo(() => {
-    return monthlyData.find(d => d.month === selectedMonth) || { artifacts: 0, coreDevs: 0, comms: 0, github: 0, final: 0 };
+    return monthlyData.find(d => d.month === selectedMonth) || {
+      artifacts: 0,
+      coreDevs: 0,
+      comms: 0,
+      github: 0,
+      final: 0
+    };
   }, [monthlyData, selectedMonth]);
-
   const radarData = useMemo(() => {
-    return [
-      { subject: 'Artifacts', value: currentData.artifacts, fullMark: 1 },
-      { subject: 'Core Devs', value: currentData.coreDevs, fullMark: 1 },
-      { subject: 'Communications', value: currentData.comms, fullMark: 1 },
-      { subject: 'GitHub', value: currentData.github, fullMark: 1 }
-    ];
+    return [{
+      subject: 'Artifacts',
+      value: currentData.artifacts,
+      fullMark: 1
+    }, {
+      subject: 'Core Devs',
+      value: currentData.coreDevs,
+      fullMark: 1
+    }, {
+      subject: 'Communications',
+      value: currentData.comms,
+      fullMark: 1
+    }, {
+      subject: 'GitHub',
+      value: currentData.github,
+      fullMark: 1
+    }];
   }, [currentData]);
-
   const customScore = useMemo(() => {
     return calculateFinalScore(currentData, customWeights);
   }, [currentData, customWeights]);
-
   const customTrendData = useMemo(() => {
     return monthlyData.map(d => ({
       ...d,
       custom: calculateFinalScore(d, customWeights)
     }));
   }, [monthlyData, customWeights]);
-
   const quarterlyAverages = useMemo(() => {
-    if (monthlyData.length === 0) return { q3: 0, q4: 0 };
-    
+    if (monthlyData.length === 0) return {
+      q3: 0,
+      q4: 0
+    };
     const q3Months = monthlyData.filter(d => ['Jul', 'Aug', 'Sep'].includes(d.month));
     const q4Months = monthlyData.filter(d => ['Oct', 'Nov', 'Dec'].includes(d.month));
-    
     const q3Avg = q3Months.length > 0 ? q3Months.reduce((sum, d) => sum + d.final, 0) / q3Months.length : 0;
     const q4Avg = q4Months.length > 0 ? q4Months.reduce((sum, d) => sum + d.final, 0) / q4Months.length : 0;
-    
-    return { q3: q3Avg, q4: q4Avg };
+    return {
+      q3: q3Avg,
+      q4: q4Avg
+    };
   }, [monthlyData]);
-
   if (isLoading) {
-    return (
-      <div style={{ minHeight: '100vh', background: COLORS.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.text }}>
-        <div style={{ textAlign: 'center' }}>
-          <div className="pulse" style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, #0ea5e9 0%, #7c3aed 100%)', margin: '0 auto 20px' }} />
-          <p>Loading governance data...</p>
-        </div>
-      </div>
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        minHeight: '100vh',
+        background: COLORS.bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: COLORS.text
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: 'center'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "pulse",
+      style: {
+        width: 60,
+        height: 60,
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #7c3aed 100%)',
+        margin: '0 auto 20px'
+      }
+    }), /*#__PURE__*/React.createElement("p", null, "Loading governance data...")));
   }
-
-  return (
-    <div style={{ minHeight: '100vh', background: `linear-gradient(135deg, ${COLORS.bg} 0%, #0f172a 50%, #0c1220 100%)`, color: COLORS.text, fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif" }}>
-      <style>{`
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: '100vh',
+      background: `linear-gradient(135deg, ${COLORS.bg} 0%, #0f172a 50%, #0c1220 100%)`,
+      color: COLORS.text,
+      fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif"
+    }
+  }, /*#__PURE__*/React.createElement("style", null, `
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -343,330 +510,903 @@ Dec,2,1,2,1,1,3,4,2,3,1,2`;
         .upload-btn:hover { border-color: #0ea5e9; color: #0ea5e9; background: rgba(14,165,233,0.1); }
         input[type="file"] { display: none; }
         pre { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 12px; color: #94a3b8; }
-      `}</style>
-
-      <header style={{ padding: '40px 24px 20px', maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg, #0ea5e9 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <div>
-            <h1 style={{ fontSize: 28, fontWeight: 700, background: 'linear-gradient(90deg, #e2e8f0 0%, #94a3b8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Governance Transparency Index
-            </h1>
-            <p style={{ color: '#64748b', fontSize: 14 }}>Filecoin Protocol · Dynamic Dashboard</p>
-          </div>
-        </div>
-        <p style={{ color: '#94a3b8', maxWidth: 700, lineHeight: 1.6, fontSize: 15, marginTop: 16 }}>
-          A quantitative framework measuring governance legibility, structure, and transparency. 
-          Upload your CSV data to update the dashboard in real-time.
-        </p>
-      </header>
-
-      <main style={{ padding: '0 24px 60px', maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24, alignItems: 'center' }}>
-          <label className="upload-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-            </svg>
-            Upload CSV
-            <input type="file" accept=".csv" onChange={handleFileUpload} />
-          </label>
-          
-          <button
-            onClick={() => setShowDataFormat(!showDataFormat)}
-            style={{ padding: '10px 18px', borderRadius: 8, border: '1px solid #334155', background: showDataFormat ? 'rgba(14,165,233,0.1)' : 'transparent', color: showDataFormat ? '#0ea5e9' : '#64748b', cursor: 'pointer', fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-            </svg>
-            CSV Format
-          </button>
-
-          {error && (
-            <span style={{ color: '#ef4444', fontSize: 13, marginLeft: 'auto' }}>{error}</span>
-          )}
-        </div>
-
-        {showDataFormat && (
-          <div className="card fade-in" style={{ padding: 24, marginBottom: 24 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, color: '#e2e8f0' }}>Expected CSV Format</h3>
-            <p style={{ color: '#94a3b8', fontSize: 13, marginBottom: 16 }}>
-              Export your Google Sheet as CSV with the following columns. The dashboard will automatically calculate scores.
-            </p>
-            <pre>{SAMPLE_CSV}</pre>
-            <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-              <div>
-                <h4 style={{ color: COLORS.artifacts, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Artifacts (30%)</h4>
-                <p style={{ color: '#64748b', fontSize: 11 }}>charter_updates, gh_announcements, fip_decisions</p>
-              </div>
-              <div>
-                <h4 style={{ color: COLORS.coreDevs, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Core Devs (35%)</h4>
-                <p style={{ color: '#64748b', fontSize: 11 }}>agendas, summaries, decisions_ais</p>
-              </div>
-              <div>
-                <h4 style={{ color: COLORS.comms, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Communications (25%)</h4>
-                <p style={{ color: '#64748b', fontSize: 11 }}>network_updates, public_blogs</p>
-              </div>
-              <div>
-                <h4 style={{ color: COLORS.github, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>GitHub (10%)</h4>
-                <p style={{ color: '#64748b', fontSize: 11 }}>issue_updates, review_comments, fip_transitions</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
-          {monthlyData.map(d => (
-            <button key={d.month} className={`month-btn ${selectedMonth === d.month ? 'active' : ''}`} onClick={() => setSelectedMonth(d.month)}>
-              {d.month}
-            </button>
-          ))}
-          <button
-            onClick={() => setShowMethodology(!showMethodology)}
-            style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 8, border: '1px solid #334155', background: showMethodology ? 'rgba(14,165,233,0.1)' : 'transparent', color: showMethodology ? '#0ea5e9' : '#64748b', cursor: 'pointer', fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            Methodology
-          </button>
-        </div>
-
-        {showMethodology && (
-          <div className="card fade-in" style={{ padding: 32, marginBottom: 32 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16, color: '#e2e8f0' }}>How the Index Works</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
-              <div>
-                <h4 style={{ color: '#0ea5e9', fontSize: 14, fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Data Sources</h4>
-                <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.6 }}>
-                  Activity data from <code style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>filecoin-project/FIPs</code> and <code style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>filecoin-project/core-devs</code> repositories.
-                </p>
-              </div>
-              <div>
-                <h4 style={{ color: '#0ea5e9', fontSize: 14, fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Anti-Spam Caps</h4>
-                <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.6 }}>
-                  Each metric has a monthly cap reflecting maximum meaningful signal. Beyond the cap, additional activity doesn't increase the score.
-                </p>
-              </div>
-              <div>
-                <h4 style={{ color: '#0ea5e9', fontSize: 14, fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Scoring Formula</h4>
-                <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.6 }}>
-                  <code style={{ background: '#1e293b', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>Category Score = Σ(min(actual, cap)) / Σ(caps)</code><br />
-                  Final index is a weighted average across all categories.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, marginBottom: 32 }}>
-          <div className="card glow" style={{ padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#64748b', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>Overall Index Score</span>
-            <div style={{ position: 'relative' }}>
-              <svg width="180" height="180" viewBox="0 0 100 100">
-                <defs>
-                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#0ea5e9" />
-                    <stop offset="100%" stopColor="#7c3aed" />
-                  </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#1e293b" strokeWidth="8" />
-                <circle
-                  cx="50" cy="50" r="45" fill="none" stroke="url(#scoreGradient)" strokeWidth="8"
-                  strokeDasharray={`${currentData.final * 2 * Math.PI * 45} ${2 * Math.PI * 45}`}
-                  strokeLinecap="round" transform="rotate(-90 50 50)"
-                  style={{ transition: 'stroke-dasharray 0.8s ease-out' }}
-                />
-                <text x="50" y="46" textAnchor="middle" dominantBaseline="middle" fill="#e2e8f0" fontSize="28" fontWeight="700">
-                  {(currentData.final * 100).toFixed(0)}
-                </text>
-                <text x="50" y="62" textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontSize="10">
-                  OUT OF 100
-                </text>
-              </svg>
-            </div>
-            <div style={{ display: 'flex', gap: 24, marginTop: 24 }}>
-              {[
-                { label: 'Q3 Avg', value: (quarterlyAverages.q3 * 100).toFixed(0) },
-                { label: 'Q4 Avg', value: (quarterlyAverages.q4 * 100).toFixed(0) }
-              ].map(q => (
-                <div key={q.label} style={{ textAlign: 'center' }}>
-                  <div style={{ color: '#e2e8f0', fontSize: 20, fontWeight: 600 }}>{q.value}</div>
-                  <div style={{ color: '#64748b', fontSize: 11, textTransform: 'uppercase' }}>{q.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card" style={{ padding: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>
-              Category Breakdown · {selectedMonth}
-            </h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <RadarChart data={radarData}>
-                <PolarGrid stroke="#1e293b" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 1]} tick={{ fill: '#475569', fontSize: 10 }} />
-                <Radar name="Score" dataKey="value" stroke="#0ea5e9" fill="#0ea5e9" fillOpacity={0.3} strokeWidth={2} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="card" style={{ padding: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>
-              Score Trend
-            </h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={monthlyData}>
-                <defs>
-                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#1e293b' }} />
-                <YAxis domain={[0, 1]} tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#1e293b' }} tickFormatter={v => `${(v*100).toFixed(0)}%`} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="final" stroke="#0ea5e9" fill="url(#areaGradient)" strokeWidth={2} name="Final Score" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: '#e2e8f0' }}>Score Components</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, marginBottom: 40 }}>
-          {categories.map(cat => {
-            const score = currentData[cat.id] || 0;
-            const isExpanded = activeCategory === cat.id;
-            return (
-              <div
-                key={cat.id}
-                className="card category-card"
-                style={{ padding: 24, borderColor: isExpanded ? cat.color : 'rgba(51,65,85,0.5)' }}
-                onClick={() => setActiveCategory(isExpanded ? null : cat.id)}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                  <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 4 }}>{cat.name}</h3>
-                    <span style={{ color: cat.color, fontSize: 12, fontWeight: 500 }}>{cat.weight}% weight</span>
-                  </div>
-                  <ScoreGauge score={score} label="" color={cat.color} size={70} />
-                </div>
-                <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.5, marginBottom: 16 }}>{cat.description}</p>
-                
-                {isExpanded && rawData[selectedMonth] && (
-                  <div className="fade-in" style={{ borderTop: '1px solid #1e293b', paddingTop: 16 }}>
-                    <h4 style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 12 }}>Metrics for {selectedMonth}</h4>
-                    {cat.metrics.map(metric => (
-                      <div key={metric.key} style={{ marginBottom: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <span style={{ color: '#e2e8f0', fontSize: 13 }}>{metric.name}</span>
-                        </div>
-                        <MetricBar value={rawData[selectedMonth][metric.key] || 0} cap={metric.cap} color={cat.color} />
-                        <p style={{ color: '#475569', fontSize: 11, marginTop: 4, fontStyle: 'italic' }}>{metric.rationale}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#64748b', fontSize: 12, marginTop: 8 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    {isExpanded ? <path d="M18 15l-6-6-6 6" /> : <path d="M6 9l6 6 6-6" />}
-                  </svg>
-                  {isExpanded ? 'Collapse' : 'View metrics'}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="card" style={{ padding: 32, marginBottom: 40 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <div>
-              <h2 style={{ fontSize: 18, fontWeight: 600, color: '#e2e8f0', marginBottom: 4 }}>Weight Simulator</h2>
-              <p style={{ color: '#64748b', fontSize: 13 }}>Adjust category weights to see how different priorities affect the score</p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ color: '#0ea5e9', fontSize: 32, fontWeight: 700 }}>{(customScore * 100).toFixed(1)}</div>
-              <div style={{ color: '#64748b', fontSize: 12, textTransform: 'uppercase' }}>Custom Score</div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24, marginBottom: 32 }}>
-            {categories.map(cat => (
-              <div key={cat.id}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ color: '#94a3b8', fontSize: 13 }}>{cat.name.split(' ')[0]}</span>
-                  <span style={{ color: cat.color, fontWeight: 600, fontSize: 14 }}>{customWeights[cat.id]}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={customWeights[cat.id]}
-                  onChange={(e) => setCustomWeights({ ...customWeights, [cat.id]: parseInt(e.target.value) })}
-                  className="weight-slider"
-                />
-              </div>
-            ))}
-          </div>
-
-          <ResponsiveContainer width="100%" height={200}>
-            <ComposedChart data={customTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#1e293b' }} />
-              <YAxis domain={[0, 1]} tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#1e293b' }} tickFormatter={v => `${(v*100).toFixed(0)}%`} />
-              <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="final" stroke="#475569" strokeWidth={2} strokeDasharray="5 5" dot={false} name="Original" />
-              <Line type="monotone" dataKey="custom" stroke="#22d3ee" strokeWidth={3} dot={{ fill: '#22d3ee', strokeWidth: 2, r: 4 }} name="Custom" />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="card" style={{ padding: 32 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#e2e8f0', marginBottom: 24 }}>Category Performance Over Time</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#1e293b' }} />
-              <YAxis domain={[0, 1]} tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#1e293b' }} tickFormatter={v => `${(v*100).toFixed(0)}%`} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                wrapperStyle={{ paddingTop: 20 }}
-                formatter={(value) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{value}</span>}
-              />
-              <Line type="monotone" dataKey="artifacts" stroke={COLORS.artifacts} strokeWidth={2} dot={{ fill: COLORS.artifacts, strokeWidth: 2, r: 4 }} name="Artifacts (30%)" />
-              <Line type="monotone" dataKey="coreDevs" stroke={COLORS.coreDevs} strokeWidth={2} dot={{ fill: COLORS.coreDevs, strokeWidth: 2, r: 4 }} name="Core Devs (35%)" />
-              <Line type="monotone" dataKey="comms" stroke={COLORS.comms} strokeWidth={2} dot={{ fill: COLORS.comms, strokeWidth: 2, r: 4 }} name="Communications (25%)" />
-              <Line type="monotone" dataKey="github" stroke={COLORS.github} strokeWidth={2} dot={{ fill: COLORS.github, strokeWidth: 2, r: 4 }} name="GitHub (10%)" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <footer style={{ marginTop: 60, padding: '32px 0', borderTop: '1px solid #1e293b', textAlign: 'center' }}>
-          <p style={{ color: '#64748b', fontSize: 13 }}>
-            Governance Transparency Index Framework · Open Methodology
-          </p>
-          <p style={{ color: '#475569', fontSize: 12, marginTop: 8 }}>
-            Data loaded dynamically from CSV · Designed to discourage engagement farming
-          </p>
-        </footer>
-      </main>
-    </div>
-  );
+      `), /*#__PURE__*/React.createElement("header", {
+    style: {
+      padding: '40px 24px 20px',
+      maxWidth: 1400,
+      margin: '0 auto'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 16,
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      background: 'linear-gradient(135deg, #0ea5e9 0%, #7c3aed 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "24",
+    height: "24",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "white",
+    strokeWidth: "2",
+    strokeLinecap: "round"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M12 2L2 7l10 5 10-5-10-5z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M2 17l10 5 10-5"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M2 12l10 5 10-5"
+  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    style: {
+      fontSize: 28,
+      fontWeight: 700,
+      background: 'linear-gradient(90deg, #e2e8f0 0%, #94a3b8 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
+    }
+  }, "Governance Transparency Index"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#64748b',
+      fontSize: 14
+    }
+  }, "Filecoin Protocol \xB7 Dynamic Dashboard"))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#94a3b8',
+      maxWidth: 700,
+      lineHeight: 1.6,
+      fontSize: 15,
+      marginTop: 16
+    }
+  }, "A quantitative framework measuring governance legibility, structure, and transparency. Upload your CSV data to update the dashboard in real-time.")), /*#__PURE__*/React.createElement("main", {
+    style: {
+      padding: '0 24px 60px',
+      maxWidth: 1400,
+      margin: '0 auto'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 12,
+      marginBottom: 24,
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "upload-btn"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"
+  })), "Upload CSV", /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: ".csv",
+    onChange: handleFileUpload
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowDataFormat(!showDataFormat),
+    style: {
+      padding: '10px 18px',
+      borderRadius: 8,
+      border: '1px solid #334155',
+      background: showDataFormat ? 'rgba(14,165,233,0.1)' : 'transparent',
+      color: showDataFormat ? '#0ea5e9' : '#64748b',
+      cursor: 'pointer',
+      fontSize: 14,
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M14 2v6h6M16 13H8M16 17H8M10 9H8"
+  })), "CSV Format"), error && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#ef4444',
+      fontSize: 13,
+      marginLeft: 'auto'
+    }
+  }, error)), showDataFormat && /*#__PURE__*/React.createElement("div", {
+    className: "card fade-in",
+    style: {
+      padding: 24,
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: 16,
+      fontWeight: 600,
+      marginBottom: 12,
+      color: '#e2e8f0'
+    }
+  }, "Expected CSV Format"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#94a3b8',
+      fontSize: 13,
+      marginBottom: 16
+    }
+  }, "Export your Google Sheet as CSV with the following columns. The dashboard will automatically calculate scores."), /*#__PURE__*/React.createElement("pre", null, SAMPLE_CSV), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 16,
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: COLORS.artifacts,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 4
+    }
+  }, "Artifacts (30%)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#64748b',
+      fontSize: 11
+    }
+  }, "charter_updates, gh_announcements, fip_decisions")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: COLORS.coreDevs,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 4
+    }
+  }, "Core Devs (35%)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#64748b',
+      fontSize: 11
+    }
+  }, "agendas, summaries, decisions_ais")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: COLORS.comms,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 4
+    }
+  }, "Communications (25%)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#64748b',
+      fontSize: 11
+    }
+  }, "network_updates, public_blogs")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: COLORS.github,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 4
+    }
+  }, "GitHub (10%)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#64748b',
+      fontSize: 11
+    }
+  }, "issue_updates, review_comments, fip_transitions")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 32
+    }
+  }, monthlyData.map(d => /*#__PURE__*/React.createElement("button", {
+    key: d.month,
+    className: `month-btn ${selectedMonth === d.month ? 'active' : ''}`,
+    onClick: () => setSelectedMonth(d.month)
+  }, d.month)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowMethodology(!showMethodology),
+    style: {
+      marginLeft: 'auto',
+      padding: '10px 18px',
+      borderRadius: 8,
+      border: '1px solid #334155',
+      background: showMethodology ? 'rgba(14,165,233,0.1)' : 'transparent',
+      color: showMethodology ? '#0ea5e9' : '#64748b',
+      cursor: 'pointer',
+      fontSize: 14,
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 16v-4M12 8h.01"
+  })), "Methodology")), showMethodology && /*#__PURE__*/React.createElement("div", {
+    className: "card fade-in",
+    style: {
+      padding: 32,
+      marginBottom: 32
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: 18,
+      fontWeight: 600,
+      marginBottom: 16,
+      color: '#e2e8f0'
+    }
+  }, "How the Index Works"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gap: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: '#0ea5e9',
+      fontSize: 14,
+      fontWeight: 600,
+      marginBottom: 8,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em'
+    }
+  }, "Data Sources"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#94a3b8',
+      fontSize: 14,
+      lineHeight: 1.6
+    }
+  }, "Activity data from ", /*#__PURE__*/React.createElement("code", {
+    style: {
+      background: '#1e293b',
+      padding: '2px 6px',
+      borderRadius: 4,
+      fontSize: 13
+    }
+  }, "filecoin-project/FIPs"), " and ", /*#__PURE__*/React.createElement("code", {
+    style: {
+      background: '#1e293b',
+      padding: '2px 6px',
+      borderRadius: 4,
+      fontSize: 13
+    }
+  }, "filecoin-project/core-devs"), " repositories.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: '#0ea5e9',
+      fontSize: 14,
+      fontWeight: 600,
+      marginBottom: 8,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em'
+    }
+  }, "Anti-Spam Caps"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#94a3b8',
+      fontSize: 14,
+      lineHeight: 1.6
+    }
+  }, "Each metric has a monthly cap reflecting maximum meaningful signal. Beyond the cap, additional activity doesn't increase the score.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: '#0ea5e9',
+      fontSize: 14,
+      fontWeight: 600,
+      marginBottom: 8,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em'
+    }
+  }, "Scoring Formula"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#94a3b8',
+      fontSize: 14,
+      lineHeight: 1.6
+    }
+  }, /*#__PURE__*/React.createElement("code", {
+    style: {
+      background: '#1e293b',
+      padding: '2px 6px',
+      borderRadius: 4,
+      fontSize: 13
+    }
+  }, "Category Score = \u03A3(min(actual, cap)) / \u03A3(caps)"), /*#__PURE__*/React.createElement("br", null), "Final index is a weighted average across all categories.")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+      gap: 24,
+      marginBottom: 32
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card glow",
+    style: {
+      padding: 32,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#64748b',
+      fontSize: 12,
+      textTransform: 'uppercase',
+      letterSpacing: '0.1em',
+      marginBottom: 16
+    }
+  }, "Overall Index Score"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "180",
+    height: "180",
+    viewBox: "0 0 100 100"
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "scoreGradient",
+    x1: "0%",
+    y1: "0%",
+    x2: "100%",
+    y2: "100%"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0%",
+    stopColor: "#0ea5e9"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "100%",
+    stopColor: "#7c3aed"
+  }))), /*#__PURE__*/React.createElement("circle", {
+    cx: "50",
+    cy: "50",
+    r: "45",
+    fill: "none",
+    stroke: "#1e293b",
+    strokeWidth: "8"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "50",
+    cy: "50",
+    r: "45",
+    fill: "none",
+    stroke: "url(#scoreGradient)",
+    strokeWidth: "8",
+    strokeDasharray: `${currentData.final * 2 * Math.PI * 45} ${2 * Math.PI * 45}`,
+    strokeLinecap: "round",
+    transform: "rotate(-90 50 50)",
+    style: {
+      transition: 'stroke-dasharray 0.8s ease-out'
+    }
+  }), /*#__PURE__*/React.createElement("text", {
+    x: "50",
+    y: "46",
+    textAnchor: "middle",
+    dominantBaseline: "middle",
+    fill: "#e2e8f0",
+    fontSize: "28",
+    fontWeight: "700"
+  }, (currentData.final * 100).toFixed(0)), /*#__PURE__*/React.createElement("text", {
+    x: "50",
+    y: "62",
+    textAnchor: "middle",
+    dominantBaseline: "middle",
+    fill: "#64748b",
+    fontSize: "10"
+  }, "OUT OF 100"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 24,
+      marginTop: 24
+    }
+  }, [{
+    label: 'Q3 Avg',
+    value: (quarterlyAverages.q3 * 100).toFixed(0)
+  }, {
+    label: 'Q4 Avg',
+    value: (quarterlyAverages.q4 * 100).toFixed(0)
+  }].map(q => /*#__PURE__*/React.createElement("div", {
+    key: q.label,
+    style: {
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: '#e2e8f0',
+      fontSize: 20,
+      fontWeight: 600
+    }
+  }, q.value), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: '#64748b',
+      fontSize: 11,
+      textTransform: 'uppercase'
+    }
+  }, q.label))))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 24
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#94a3b8',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+      marginBottom: 16
+    }
+  }, "Category Breakdown \xB7 ", selectedMonth), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 220
+  }, /*#__PURE__*/React.createElement(RadarChart, {
+    data: radarData
+  }, /*#__PURE__*/React.createElement(PolarGrid, {
+    stroke: "#1e293b"
+  }), /*#__PURE__*/React.createElement(PolarAngleAxis, {
+    dataKey: "subject",
+    tick: {
+      fill: '#64748b',
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(PolarRadiusAxis, {
+    angle: 30,
+    domain: [0, 1],
+    tick: {
+      fill: '#475569',
+      fontSize: 10
+    }
+  }), /*#__PURE__*/React.createElement(Radar, {
+    name: "Score",
+    dataKey: "value",
+    stroke: "#0ea5e9",
+    fill: "#0ea5e9",
+    fillOpacity: 0.3,
+    strokeWidth: 2
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 24
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#94a3b8',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+      marginBottom: 16
+    }
+  }, "Score Trend"), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 220
+  }, /*#__PURE__*/React.createElement(AreaChart, {
+    data: monthlyData
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "areaGradient",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "5%",
+    stopColor: "#0ea5e9",
+    stopOpacity: 0.3
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "95%",
+    stopColor: "#0ea5e9",
+    stopOpacity: 0
+  }))), /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: "#1e293b"
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fill: '#64748b',
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: '#1e293b'
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    domain: [0, 1],
+    tick: {
+      fill: '#64748b',
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: '#1e293b'
+    },
+    tickFormatter: v => `${(v * 100).toFixed(0)}%`
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, null)
+  }), /*#__PURE__*/React.createElement(Area, {
+    type: "monotone",
+    dataKey: "final",
+    stroke: "#0ea5e9",
+    fill: "url(#areaGradient)",
+    strokeWidth: 2,
+    name: "Final Score"
+  }))))), /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontSize: 18,
+      fontWeight: 600,
+      marginBottom: 20,
+      color: '#e2e8f0'
+    }
+  }, "Score Components"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gap: 20,
+      marginBottom: 40
+    }
+  }, categories.map(cat => {
+    const score = currentData[cat.id] || 0;
+    const isExpanded = activeCategory === cat.id;
+    return /*#__PURE__*/React.createElement("div", {
+      key: cat.id,
+      className: "card category-card",
+      style: {
+        padding: 24,
+        borderColor: isExpanded ? cat.color : 'rgba(51,65,85,0.5)'
+      },
+      onClick: () => setActiveCategory(isExpanded ? null : cat.id)
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      style: {
+        fontSize: 15,
+        fontWeight: 600,
+        color: '#e2e8f0',
+        marginBottom: 4
+      }
+    }, cat.name), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: cat.color,
+        fontSize: 12,
+        fontWeight: 500
+      }
+    }, cat.weight, "% weight")), /*#__PURE__*/React.createElement(ScoreGauge, {
+      score: score,
+      label: "",
+      color: cat.color,
+      size: 70
+    })), /*#__PURE__*/React.createElement("p", {
+      style: {
+        color: '#64748b',
+        fontSize: 13,
+        lineHeight: 1.5,
+        marginBottom: 16
+      }
+    }, cat.description), isExpanded && rawData[selectedMonth] && /*#__PURE__*/React.createElement("div", {
+      className: "fade-in",
+      style: {
+        borderTop: '1px solid #1e293b',
+        paddingTop: 16
+      }
+    }, /*#__PURE__*/React.createElement("h4", {
+      style: {
+        fontSize: 12,
+        fontWeight: 600,
+        color: '#94a3b8',
+        textTransform: 'uppercase',
+        marginBottom: 12
+      }
+    }, "Metrics for ", selectedMonth), cat.metrics.map(metric => /*#__PURE__*/React.createElement("div", {
+      key: metric.key,
+      style: {
+        marginBottom: 12
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: 4
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: '#e2e8f0',
+        fontSize: 13
+      }
+    }, metric.name)), /*#__PURE__*/React.createElement(MetricBar, {
+      value: rawData[selectedMonth][metric.key] || 0,
+      cap: metric.cap,
+      color: cat.color
+    }), /*#__PURE__*/React.createElement("p", {
+      style: {
+        color: '#475569',
+        fontSize: 11,
+        marginTop: 4,
+        fontStyle: 'italic'
+      }
+    }, metric.rationale)))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        color: '#64748b',
+        fontSize: 12,
+        marginTop: 8
+      }
+    }, /*#__PURE__*/React.createElement("svg", {
+      width: "14",
+      height: "14",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2"
+    }, isExpanded ? /*#__PURE__*/React.createElement("path", {
+      d: "M18 15l-6-6-6 6"
+    }) : /*#__PURE__*/React.createElement("path", {
+      d: "M6 9l6 6 6-6"
+    })), isExpanded ? 'Collapse' : 'View metrics'));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 32,
+      marginBottom: 40
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontSize: 18,
+      fontWeight: 600,
+      color: '#e2e8f0',
+      marginBottom: 4
+    }
+  }, "Weight Simulator"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#64748b',
+      fontSize: 13
+    }
+  }, "Adjust category weights to see how different priorities affect the score")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: '#0ea5e9',
+      fontSize: 32,
+      fontWeight: 700
+    }
+  }, (customScore * 100).toFixed(1)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: '#64748b',
+      fontSize: 12,
+      textTransform: 'uppercase'
+    }
+  }, "Custom Score"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: 24,
+      marginBottom: 32
+    }
+  }, categories.map(cat => /*#__PURE__*/React.createElement("div", {
+    key: cat.id
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#94a3b8',
+      fontSize: 13
+    }
+  }, cat.name.split(' ')[0]), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: cat.color,
+      fontWeight: 600,
+      fontSize: 14
+    }
+  }, customWeights[cat.id], "%")), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "0",
+    max: "100",
+    value: customWeights[cat.id],
+    onChange: e => setCustomWeights({
+      ...customWeights,
+      [cat.id]: parseInt(e.target.value)
+    }),
+    className: "weight-slider"
+  })))), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 200
+  }, /*#__PURE__*/React.createElement(ComposedChart, {
+    data: customTrendData
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: "#1e293b"
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fill: '#64748b',
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: '#1e293b'
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    domain: [0, 1],
+    tick: {
+      fill: '#64748b',
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: '#1e293b'
+    },
+    tickFormatter: v => `${(v * 100).toFixed(0)}%`
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, null)
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "final",
+    stroke: "#475569",
+    strokeWidth: 2,
+    strokeDasharray: "5 5",
+    dot: false,
+    name: "Original"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "custom",
+    stroke: "#22d3ee",
+    strokeWidth: 3,
+    dot: {
+      fill: '#22d3ee',
+      strokeWidth: 2,
+      r: 4
+    },
+    name: "Custom"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      padding: 32
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontSize: 18,
+      fontWeight: 600,
+      color: '#e2e8f0',
+      marginBottom: 24
+    }
+  }, "Category Performance Over Time"), /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 300
+  }, /*#__PURE__*/React.createElement(LineChart, {
+    data: monthlyData
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: "#1e293b"
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "month",
+    tick: {
+      fill: '#64748b',
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: '#1e293b'
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    domain: [0, 1],
+    tick: {
+      fill: '#64748b',
+      fontSize: 11
+    },
+    axisLine: {
+      stroke: '#1e293b'
+    },
+    tickFormatter: v => `${(v * 100).toFixed(0)}%`
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(CustomTooltip, null)
+  }), /*#__PURE__*/React.createElement(Legend, {
+    wrapperStyle: {
+      paddingTop: 20
+    },
+    formatter: value => /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: '#94a3b8',
+        fontSize: 12
+      }
+    }, value)
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "artifacts",
+    stroke: COLORS.artifacts,
+    strokeWidth: 2,
+    dot: {
+      fill: COLORS.artifacts,
+      strokeWidth: 2,
+      r: 4
+    },
+    name: "Artifacts (30%)"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "coreDevs",
+    stroke: COLORS.coreDevs,
+    strokeWidth: 2,
+    dot: {
+      fill: COLORS.coreDevs,
+      strokeWidth: 2,
+      r: 4
+    },
+    name: "Core Devs (35%)"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "comms",
+    stroke: COLORS.comms,
+    strokeWidth: 2,
+    dot: {
+      fill: COLORS.comms,
+      strokeWidth: 2,
+      r: 4
+    },
+    name: "Communications (25%)"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "github",
+    stroke: COLORS.github,
+    strokeWidth: 2,
+    dot: {
+      fill: COLORS.github,
+      strokeWidth: 2,
+      r: 4
+    },
+    name: "GitHub (10%)"
+  })))), /*#__PURE__*/React.createElement("footer", {
+    style: {
+      marginTop: 60,
+      padding: '32px 0',
+      borderTop: '1px solid #1e293b',
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#64748b',
+      fontSize: 13
+    }
+  }, "Governance Transparency Index Framework \xB7 Open Methodology"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: '#475569',
+      fontSize: 12,
+      marginTop: 8
+    }
+  }, "Data loaded dynamically from CSV \xB7 Designed to discourage engagement farming"))));
 }
 
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<FilecoinGovernanceIndex />);
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(FilecoinGovernanceIndex));
+    } catch(e) {
+      document.body.innerHTML = '<pre style="color:red;padding:20px">RENDER ERROR: ' + e.message + '\n' + e.stack + '</pre>';
+    }
   </script>
 </body>
 </html>
