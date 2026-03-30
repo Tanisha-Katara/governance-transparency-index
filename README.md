@@ -2,6 +2,8 @@
 
 A dashboard tracking how transparently and consistently Filecoin governance is conducted each month, across four weighted categories.
 
+**Live dashboard:** https://tanisha-katara.github.io/governance-transparency-index/governance-index.html
+
 ## What it measures
 
 | Category | Weight | What it tracks |
